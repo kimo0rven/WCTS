@@ -1,0 +1,56 @@
+orgId = zoho.crm.getOrgVariable("books_org_id");
+deal = zoho.crm.getRecordById("Deals",id);
+contactId = deal.get("Contact_Name").get("id");
+contact = zoho.crm.getRecordById("Contacts",contactId);
+email = contact.get("Email");
+mobile = contact.get("Mobile");
+info email;
+invoices = zoho.books.getRecords("invoices",orgId,"email=" + email,"zoho_books_connection");
+latestInvoice = invoices.get("invoices").get(0);
+latestInvoiceId = latestInvoice.get("invoice_id");
+//
+//Refresh Access Token
+getToken = invokeurl
+[
+	url :"https://accounts.zoho.com/oauth/v2/token?refresh_token=1000.df3a5d6830eac2ed0a721ad01b46ce64.69dc2634b2bf8056594c35bba604a8b7&client_id=1000.FAUMHACTAS06U5ODQM1YXGWOOCRYWR&client_secret=e919bec15ec17cac7918a0a7fc7bd9960a353cfb17&grant_type=refresh_token"
+	type :POST
+];
+accessToken = getToken.get("access_token");
+//
+//Send Invoice
+parameters_data = {"to_mail_ids":{email}, "send_from_org_email_id": False};
+
+headers_data = Map();
+headers_data.put("Authorization","Zoho-oauthtoken" + accessToken);
+response = invokeurl
+[
+	url :"https://www.zohoapis.com/books/v3/invoices/" + latestInvoiceId + "/email?organization_id=" + orgId
+	type :POST
+	parameters:parameters_data.toString()
+	headers:headers_data
+	connection:"zoho_books_connection"
+	content-type:"application/json"
+];
+info response;
+emailQuery = "email=" + email;
+customer = zoho.books.getRecords("contacts",orgId,emailQuery,"zoho_books_connection");
+customerBooksId = customer.get("contacts").get(0).get("contact_id");
+firstName = customer.get("contacts").get(0).get("first_name");
+info customerBooksId;
+// info customer;
+//
+headers = Map();
+headers.put("Authorization","Zoho-oauthtoken" + accessToken);
+//
+parameters = Map();
+// response1 = invokeUrl
+// [
+// url: "https://www.zohoapis.com/books/v3/contacts/" + customerBooksId +"/portal/enable?organization_id=" + orgId
+// type: POST
+// headers: headers
+// content-type: "application/json"
+// parameters: parameters.toString()
+// connection: "zoho_books_connection"
+// ];
+// info response1;
+return "";
