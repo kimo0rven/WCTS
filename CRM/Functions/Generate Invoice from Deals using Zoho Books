@@ -5,6 +5,7 @@ dealName = deal.get("Deal_Name");
 dealInvoiceNote = deal.get("Invoice_Notes");
 customerID = deal.get("Contact_Name").get("name");
 closingDate = deal.get("Closing_Date");
+info deal;
 adjustment = deal.get("Adjustment");
 adjustmentReason = deal.get("Adjustment_Reason");
 if(adjustmentReason == "" || adjustmentReason.isNull() || adjustmentReason.isEmpty())
@@ -31,19 +32,29 @@ else
 //Invoice Items
 for each  service in services
 {
-	zBooksId = service.get("Zoho_Books_ID");
+	productId = service.get("Service").get("id");
+	// 	product = zoho.crm.getRecordById("Products", productId);
+	// 	productCode = product.get("Product_Code");
+	//
+	itemQuery = "zcrm_product_id=" + encodeUrl(productId);
+	ZBooksItem = zoho.books.getRecords("items",orgID,itemQuery,"zoho_books_connection");
+	ZBooksItemId = ZBooksItem.get("items").get(0).get("item_id");
+	//
 	rate = service.get("Rate");
 	quantity = service.get("Quantity");
 	discount = service.get("Discount");
 	MAType = service.get("M_A_Type");
-	if(MAType.isNull() == False) {
+	if(MAType.isNull() == False)
+	{
 		MAValue = service.get("M_A_Value");
 		MAQuantity = service.get("M_A_Quantity");
-		if(MAType == "Multiplier") {
+		if(MAType == "Multiplier")
+		{
 			rate = rate * MAValue;
 		}
-		if(MAType == "Adder") {
-			rate = (MAQuantity * MAValue ) + rate;
+		if(MAType == "Adder")
+		{
+			rate = MAQuantity * MAValue + rate;
 		}
 	}
 	//
@@ -52,7 +63,7 @@ for each  service in services
 		discount = 0;
 	}
 	Product_Item_Map = Map();
-	Product_Item_Map.put("item_id",zBooksId);
+	Product_Item_Map.put("item_id",ZBooksItemId);
 	Product_Item_Map.put("rate",rate);
 	Product_Item_Map.put("quantity",quantity);
 	Product_Item_Map.put("discount_amount",discount);
@@ -74,5 +85,5 @@ Create_Invoice_Map.put("adjustment",adjustment);
 Create_Invoice_Map.put("adjustment_description",adjustmentReason);
 Create_Invoice_Map.put("discount_type","item_level");
 createInvoice = zoho.books.createRecord("Invoices",orgID,Create_Invoice_Map,"zoho_books_connection");
-info createInvoice;
+// info createInvoice;
 return "";
