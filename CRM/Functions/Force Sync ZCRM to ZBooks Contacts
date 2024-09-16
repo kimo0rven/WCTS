@@ -1,0 +1,10 @@
+orgId = zoho.crm.getOrgVariable("books_org_id");
+mp = Map();
+createsync = invokeurl
+[
+	url :"https://books.zoho.com/api/v3/crm/contact/" + id + "/import?organization_id=" + orgId
+	type :POST
+	parameters:mp
+	connection:"zoho_books_connection"
+];
+info createsync;
