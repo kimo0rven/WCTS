@@ -1,0 +1,80 @@
+orgID = zoho.crm.getOrgVariable("books_org_id");
+deal = zoho.crm.getRecordById("Deals",id);
+govContract = deal.get("Government_Contract");
+if(govContract)
+{
+	dealInvoiceNote = deal.get("Invoice_Notes");
+	reoccurrance = deal.get("Reoccurence_Frequency");
+	repeat = deal.get("Repeat_Every");
+	//
+	//
+	services = deal.get("Services_Availed_Deal");
+	Product_Items_List = List();
+	for each  service in services
+	{
+		productId = service.get("Service").get("id");
+		// 	product = zoho.crm.getRecordById("Products", productId);
+		// 	productCode = product.get("Product_Code");
+		//
+		itemQuery = "zcrm_product_id=" + encodeUrl(productId);
+		ZBooksItem = zoho.books.getRecords("items",orgID,itemQuery,"zoho_books_connection");
+		ZBooksItemId = ZBooksItem.get("items").get(0).get("item_id");
+		//
+		rate = service.get("Rate");
+		quantity = service.get("Quantity");
+		discount = service.get("Discount");
+		MAType = service.get("M_A_Type");
+		if(MAType.isNull() == False)
+		{
+			MAValue = service.get("M_A_Value");
+			MAQuantity = service.get("M_A_Quantity");
+			if(MAType == "Multiplier")
+			{
+				rate = rate * MAValue;
+			}
+			if(MAType == "Adder")
+			{
+				rate = MAQuantity * MAValue + rate;
+			}
+		}
+		//
+		if(discount.isNull())
+		{
+			discount = 0;
+		}
+		Product_Item_Map = Map();
+		Product_Item_Map.put("item_id",ZBooksItemId);
+		Product_Item_Map.put("rate",rate);
+		Product_Item_Map.put("quantity",quantity);
+		Product_Item_Map.put("discount_amount",discount);
+		Product_Item_Map.put("discount",discount);
+		Product_Items_List.add(Product_Item_Map);
+	}
+	//
+	customerID = deal.get("Contact_Name").get("name");
+	nameQuery = "contact_name=" + encodeUrl(customerID);
+	customer = zoho.books.getRecords("contacts",orgID,nameQuery,"zoho_books_connection");
+	customerBooksId = customer.get("contacts").get(0).get("contact_id");
+	//
+	//
+	dealName = deal.get("Deal_Name");
+	parameters_data = Map();
+	parameters_data.put("recurrence_name",dealName + "_ReOccuring_Invoice");
+	parameters_data.put("customer_id",customerBooksId);
+	parameters_data.put("recurrence_frequency",reoccurrance);
+	parameters_data.put("Repeat_Every",repeat);
+	parameters_data.put("line_items",Product_Items_List);
+	parameters_data.put("zcrm_potential_id",id);
+	parameters_data.put("notes",dealInvoiceNote);
+	//
+	orgId = zoho.crm.getOrgVariable("books_org_id");
+	//
+	response = zoho.books.createRecord("recurringinvoices",orgId,parameters_data,"zoho_books_connection");
+	invoiceId = response.get("recurring_invoice").get("comments").get(0).get("transaction_id");
+	info invoiceId;
+	invoiceMap = Map();
+	invoiceMap.put("zcrm_potential_id",id);
+	update = zoho.books.updateRecord("invoices",orgId,invoiceId,invoiceMap,"zoho_books_connection");
+	info update;
+}
+return "";
