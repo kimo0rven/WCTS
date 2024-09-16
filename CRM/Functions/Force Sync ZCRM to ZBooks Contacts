@@ -1,4 +1,15 @@
 orgId = zoho.crm.getOrgVariable("books_org_id");
+
+deal = zoho.crm.getRecordById("Deals",id);
+customerID = deal.get("Contact_Name").get("name");
+nameQuery = "contact_name=1" + encodeUrl(customerID);
+customer = zoho.books.getRecords("contacts",orgId,nameQuery,"zoho_books_connection");
+contactList = customer.get("contacts");
+
+if(contactList.len() != 0) {
+	customerBooksId = customer.get("contacts").get(0).get("contact_id");
+info customerBooksId;
+
 mp = Map();
 createsync = invokeurl
 [
@@ -8,3 +19,5 @@ createsync = invokeurl
 	connection:"zoho_books_connection"
 ];
 info createsync;
+}
+
