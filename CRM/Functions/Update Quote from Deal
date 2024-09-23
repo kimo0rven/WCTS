@@ -1,0 +1,53 @@
+orgId = zoho.crm.getOrgVariable("books_org_id");
+deal = zoho.crm.getRecordById("Deals",id);
+contactId = deal.get("Contact_Name").get("id");
+customerName = deal.get("Contact_Name").get("name");
+contact = zoho.crm.getRecordById("Contacts",contactId);
+email = contact.get("Email");
+mobile = contact.get("Mobile");
+
+quotes = zoho.books.getRecords("estimates",orgId,"email=" + email,"zoho_books_connection");
+latestQuote = quotes.get("estimates").get(0);
+latestQuoteId = latestQuote.get("estimate_id");
+
+nameQuery = "contact_name=" + encodeUrl(customerName);
+customer = zoho.books.getRecords("contacts",orgId,nameQuery,"zoho_books_connection");
+customerBooksId = customer.get("contacts").get(0).get("contact_id");
+parameters_data = Map();
+parameters_data.put("customer_id",customerBooksId);
+// parameters_data.put("date", toDate(zoho.currentdate, "yyyy-MM-dd"));
+parameters_data.put("date", toString(zoho.currentdate, "yyyy-MM-dd"));
+parameters_data.put("expiry_date", toString(zoho.currentdate.addDay(15), "yyyy-MM-dd"));
+// parameters_data.put("expiry_date",zoho.currentdate.addDay(15));
+parameters_data.put("zcrm_potential_id",id);
+parameters_data.put("adjustment",deal.get("Adjustment"));
+parameters_data.put("adjustment_description",deal.get("Adjustment_Reason"));
+parameters_data.put("sub_total",deal.get("Sub_Total"));
+parameters_data.put("total",deal.get("Total"));
+parameters_data.put("notes",deal.get("Invoice_Notes"));
+//
+dealLineItems = deal.get("Services_Availed_Deal");
+lineItems = list();
+for each  i in dealLineItems
+{
+	item = Map();
+	productId = i.get("Service").get("id");
+	product = zoho.crm.getRecordById("Products",productId);
+	productCode = product.get("Product_Code");
+	itemQuery = "sku=" + encodeUrl(productCode);
+	items = zoho.books.getRecords("Items",orgId,itemQuery,"zoho_books_connection");
+	x = items.get("items");
+	for each  y in x
+	{
+		if(y.get("sku") == productCode)
+		{
+			item.put("item_id",y.get("item_id"));
+			item.put("quantity",i.get("Quantity"));
+			item.put("discount",i.get("Discount"));
+			lineItems.add(item);
+		}
+	}
+}
+parameters_data.put("line_items",lineItems);
+info zoho.books.updateRecord("Estimates", orgId, latestQuoteId, parameters_data, "zoho_books_connection");
+return "";
