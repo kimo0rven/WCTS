@@ -1,0 +1,13 @@
+map createTaskForApprovedQuotes(string id, string quoteName)
+{
+deal = zoho.crm.getRecordById("Deals",id);
+contactName = deal.get("Contact_Name").get("name");
+data = Map();
+data.put("Subject",contactName + " has Approved " + quoteName);
+data.put("Priority","Highest");
+data.put("What_Id",id);
+data.put("$se_module","Deals");
+response = zoho.crm.createRecord("Tasks",data);
+info response;
+return response;
+}
