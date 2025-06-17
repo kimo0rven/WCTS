@@ -12,7 +12,7 @@ latestInvoiceId = latestInvoice.get("invoice_id");
 //Refresh Access Token
 getToken = invokeurl
 [
-	url :"https://accounts.zoho.com/oauth/v2/token?refresh_token=1000.df3a5d6830eac2ed0a721ad01b46ce64.69dc2634b2bf8056594c35bba604a8b7&client_id=1000.FAUMHACTAS06U5ODQM1YXGWOOCRYWR&client_secret=e919bec15ec17cac7918a0a7fc7bd9960a353cfb17&grant_type=refresh_token"
+	url :""
 	type :POST
 ];
 accessToken = getToken.get("access_token");
